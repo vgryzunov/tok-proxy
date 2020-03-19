@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"go mogithub.com/spf13/cobra"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
 	"os"
@@ -29,17 +29,10 @@ func init() {
 	log.Println("Started init()")
 
 	serverCmd := &cobra.Command{
-		Use: "server",
+		Use:   "server",
 		Short: "start",
-		Long: "start token proxy server",
-		Run: func(cmd *cobra.Command, agrs []string) {
-			log.Printf("inside server command")
-			log.Printf(cmd.Short)
-
-			log.Print("Config file used: ", viper.ConfigFileUsed())
-			port := viper.GetInt(HttpPortFlag)
-			log.Printf("Using HTTP Port: %d", port)
-		},
+		Long:  "start token proxy server",
+		Run:   Server,
 	}
 
 	log.Println("Configuring serverCmd...")
