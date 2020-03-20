@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"go mogithub.com/spf13/cobra"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
 	"os"
@@ -29,9 +29,9 @@ func init() {
 	log.Println("Started init()")
 
 	serverCmd := &cobra.Command{
-		Use: "server",
+		Use:   "server",
 		Short: "start",
-		Long: "start token proxy server",
+		Long:  "start token proxy server",
 		Run: func(cmd *cobra.Command, agrs []string) {
 			log.Printf("inside server command")
 			log.Printf(cmd.Short)
