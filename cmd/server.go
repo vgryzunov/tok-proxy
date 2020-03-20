@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -66,15 +66,30 @@ func Server(cmd *cobra.Command, agrs []string) {
 			return nil
 		},
 		ErrorHandler: func(rw http.ResponseWriter, r *http.Request, err error) {
-			fmt.Printf("error was: %+v", err)
+			log.Printf("error was: %+v", err)
 			rw.WriteHeader(http.StatusInternalServerError)
 			rw.Write([]byte(err.Error()))
 		},
 	}
 
-	router := httprouter.New()
-	router.Handle("GET", path, func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	router := chi.NewRouter()
+	// Base middleware stack
+	router.Use(middleware.RequestID)
+	router.Use(middleware.RealIP)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+
+	// Set a timeout value on the request context (ctx), that will signal
+	// through ctx.Done() that the request has timed out and further
+	// processing should be stopped.
+	router.Use(middleware.Timeout(60 * time.Second))
+
+	router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		proxy.ServeHTTP(w, r)
+	})
+
+	router.Route("/foo", func(r chi.Router) {
+
 	})
 
 	log.Printf("Reverse proxy is listening to the port %s", port)
