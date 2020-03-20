@@ -32,14 +32,7 @@ func init() {
 		Use:   "server",
 		Short: "start",
 		Long:  "start token proxy server",
-		Run: func(cmd *cobra.Command, agrs []string) {
-			log.Printf("inside server command")
-			log.Printf(cmd.Short)
-
-			log.Print("Config file used: ", viper.ConfigFileUsed())
-			port := viper.GetInt(HttpPortFlag)
-			log.Printf("Using HTTP Port: %d", port)
-		},
+		Run:   Server,
 	}
 
 	log.Println("Configuring serverCmd...")
