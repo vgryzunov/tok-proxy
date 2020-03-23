@@ -11,7 +11,8 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "tok-proxy",
 	Short: "TokProxy",
-	Long:  `Token Proxy Program`,
+	Long:  "Token Proxy Program",
+	Run:   Server,
 }
 
 const HttpPortFlag = "http"
@@ -27,13 +28,6 @@ func init() {
 	log.SetOutput(os.Stdout)
 
 	log.Println("Started init()")
-
-	serverCmd := &cobra.Command{
-		Use:   "server",
-		Short: "start",
-		Long:  "start token proxy server",
-		Run:   Server,
-	}
 
 	log.Println("Configuring serverCmd...")
 
@@ -59,11 +53,9 @@ func init() {
 	portHttps := elementsMap["https"].(map[string]interface{})["port"]
 	log.Printf("HTTPS port from %s: %d", viper.ConfigFileUsed(), portHttps)
 
-	rootCmd.AddCommand(serverCmd)
-
 	//serverCmd.Flags().StringVar(&HttpPortNumber, HttpPortFlag, "8080", "HTTP port")
-	serverCmd.Flags().String(HttpPortFlag, "8080", "HTTP port")
-	err := viper.BindPFlag(HttpPortFlag, serverCmd.Flags().Lookup("http"))
+	rootCmd.Flags().String(HttpPortFlag, "8080", "HTTP port")
+	err := viper.BindPFlag(HttpPortFlag, rootCmd.Flags().Lookup("http"))
 	if err != nil {
 		log.Fatalln(err)
 	}
