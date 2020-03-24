@@ -44,9 +44,32 @@ func Server(cmd *cobra.Command, agrs []string) {
 
 	proxy := &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
-			log.Println("*** Entering Director...")
-			req.Header.Add("X-Forwarded-Host", req.Host)
-			req.Header.Add("X-Origin-Host", origin.Host)
+			log.Println("*** Director ****")
+
+			headers := req.Header
+			xAuthToken := headers.Get("X-Auth-Token")
+			if xAuthToken == "" {
+				log.Printf("Not Authenticated. Missing authentication X-Auth-Token")
+			}
+
+			log.Printf("X-Auth-Token: %s", xAuthToken)
+
+			xAuthUserId := headers.Get("X-Auth-Userid")
+			log.Printf("X-Auth-Usedid: %s", xAuthUserId)
+
+			xAuthEmail := headers.Get("X-Auth-Email")
+			log.Printf("X-Auth-Usedid: %s", xAuthEmail)
+
+			req.SetBasicAuth(xAuthEmail, xAuthToken)
+
+			for name, _ := range headers {
+				if strings.HasPrefix(name, "X-Auth-") {
+					headers.Del(name)
+				}
+			}
+
+			headers.Add("X-Forwarded-Host", req.Host)
+			headers.Add("X-Origin-Host", origin.Host)
 			req.URL.Scheme = origin.Scheme
 			req.URL.Host = origin.Host
 
@@ -63,6 +86,12 @@ func Server(cmd *cobra.Command, agrs []string) {
 			}).Dial,
 		},
 		ModifyResponse: func(r *http.Response) error {
+			log.Printf("**** ModifyResponse ****")
+
+			headers := r.Header
+			for name, val := range headers {
+				log.Printf("%s: %s", name, val)
+			}
 			return nil
 		},
 		ErrorHandler: func(rw http.ResponseWriter, r *http.Request, err error) {
@@ -88,7 +117,8 @@ func Server(cmd *cobra.Command, agrs []string) {
 		proxy.ServeHTTP(w, r)
 	})
 
-	router.Route("/foo", func(r chi.Router) {
+	r := chi.NewRouter()
+	r.Route("/foo", func(r chi.Router) {
 
 	})
 

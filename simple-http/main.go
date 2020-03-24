@@ -20,17 +20,24 @@ func main() {
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		println("--->", port, req.URL.String())
+		log.Printf("---> %s %s", port, req.URL.String())
+
+		fmt.Fprintf(w, "Host = %q\n", req.Host)
+		log.Printf("Host = %q\n", req.Host)
+
+		fmt.Fprintf(w, "RemoteAddr = %q\n", req.RemoteAddr)
+		log.Printf("RemoteAddr = %q\n", req.RemoteAddr)
 
 		fmt.Fprintf(w, "%s %s %s\n", req.Method, req.URL, req.Proto)
+		log.Printf("%s %s %s\n", req.Method, req.URL, req.Proto)
 
 		for k, v := range req.Header {
 			fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
+			log.Printf("Header[%q] = %q\n", k, v)
 		}
-		fmt.Fprintf(w, "Host = %q\n", req.Host)
-		fmt.Fprintf(w, "RemoteAddr = %q\n", req.RemoteAddr)
+
 	})
 
 	log.Printf("Listening port %s", port)
-	http.ListenAndServe(":"+port, nil)
+	_ = http.ListenAndServe(":"+port, nil)
 }
