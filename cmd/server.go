@@ -3,9 +3,9 @@ package cmd
 import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -48,10 +48,6 @@ func Server(cmd *cobra.Command, agrs []string) {
 
 			headers := req.Header
 			xAuthToken := headers.Get("X-Auth-Token")
-			if xAuthToken == "" {
-				log.Printf("Not Authenticated. Missing authentication X-Auth-Token")
-			}
-
 			log.Printf("X-Auth-Token: %s", xAuthToken)
 
 			xAuthUserId := headers.Get("X-Auth-Userid")
@@ -62,7 +58,7 @@ func Server(cmd *cobra.Command, agrs []string) {
 
 			req.SetBasicAuth(xAuthEmail, xAuthToken)
 
-			for name, _ := range headers {
+			for name := range headers {
 				if strings.HasPrefix(name, "X-Auth-") {
 					headers.Del(name)
 				}
@@ -97,7 +93,7 @@ func Server(cmd *cobra.Command, agrs []string) {
 		ErrorHandler: func(rw http.ResponseWriter, r *http.Request, err error) {
 			log.Printf("error was: %+v", err)
 			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write([]byte(err.Error()))
+			_, _ = rw.Write([]byte(err.Error()))
 		},
 	}
 
@@ -132,7 +128,6 @@ func Server(cmd *cobra.Command, agrs []string) {
 
 func tokenAuthOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		log.Println("*** tokenAuthOnly handler ****")
 		headers := r.Header
 		xAuthToken := headers.Get("X-Auth-Token")
@@ -143,10 +138,4 @@ func tokenAuthOnly(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func tokenAuthOnlyRouter() http.Handler {
-	r := chi.NewRouter()
-	r.Use(tokenAuthOnly)
-	return r
 }

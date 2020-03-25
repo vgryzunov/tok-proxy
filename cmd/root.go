@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log"
 	"os"
 )
 
@@ -25,11 +25,16 @@ func Execute() {
 }
 
 func init() {
-	log.SetOutput(os.Stdout)
 
-	log.Println("Started init()")
+	log.SetFormatter(&log.JSONFormatter{})
+	standardFields := log.Fields{
+		"hostname": "staging-1",
+		"appname":  "tok-proxy",
+	}
 
-	log.Println("Configuring serverCmd...")
+	log.WithFields(standardFields).Trace("Started init()")
+
+	log.WithFields(standardFields).Info("Configuring serverCmd...")
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("tp") // TP_ - prefix for environment variables
