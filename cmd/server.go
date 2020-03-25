@@ -44,7 +44,7 @@ func Server(cmd *cobra.Command, agrs []string) {
 
 	proxy := &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
-			log.Println("*** Director ****")
+			log.Println("**** Director ****")
 
 			headers := req.Header
 			xAuthToken := headers.Get("X-Auth-Token")
@@ -113,6 +113,8 @@ func Server(cmd *cobra.Command, agrs []string) {
 	// processing should be stopped.
 	router.Use(middleware.Timeout(60 * time.Second))
 
+	router.Use(tokenAuthOnly)
+
 	router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		proxy.ServeHTTP(w, r)
 	})
@@ -126,4 +128,25 @@ func Server(cmd *cobra.Command, agrs []string) {
 	httpErr := http.ListenAndServe(":"+port, router)
 	log.Fatal(httpErr)
 	return
+}
+
+func tokenAuthOnly(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		log.Println("*** tokenAuthOnly handler ****")
+		headers := r.Header
+		xAuthToken := headers.Get("X-Auth-Token")
+		if xAuthToken == "" {
+			log.Printf("Not Authenticated. Missing authentication X-Auth-Token")
+			http.Error(w, http.StatusText(403), 403)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func tokenAuthOnlyRouter() http.Handler {
+	r := chi.NewRouter()
+	r.Use(tokenAuthOnly)
+	return r
 }
