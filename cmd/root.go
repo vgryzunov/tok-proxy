@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
 )
 
 var rootCmd = &cobra.Command{
@@ -19,8 +17,7 @@ const HttpPortFlag = "http"
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatalln(err)
 	}
 }
 
@@ -59,8 +56,9 @@ func init() {
 	log.Printf("HTTPS port from %s: %d", viper.ConfigFileUsed(), portHttps)
 
 	//serverCmd.Flags().StringVar(&HttpPortNumber, HttpPortFlag, "8080", "HTTP port")
-	rootCmd.Flags().String(HttpPortFlag, "8080", "HTTP port")
-	err := viper.BindPFlag(HttpPortFlag, rootCmd.Flags().Lookup("http"))
+	flags := rootCmd.Flags()
+	flags.String(HttpPortFlag, "8080", "HTTP port")
+	err := viper.BindPFlag(HttpPortFlag, flags.Lookup("http"))
 	if err != nil {
 		log.Fatalln(err)
 	}
