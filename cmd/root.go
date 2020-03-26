@@ -14,6 +14,7 @@ var rootCmd = &cobra.Command{
 }
 
 const HttpPortFlag = "http"
+const OriginUrlFlag = "origin_url"
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
@@ -31,7 +32,7 @@ func init() {
 
 	log.WithFields(standardFields).Trace("Started init()")
 
-	log.WithFields(standardFields).Info("Configuring serverCmd...")
+	log.Info("Configuring serverCmd...")
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("tp") // TP_ - prefix for environment variables
@@ -44,21 +45,26 @@ func init() {
 	}
 
 	elementsMap := viper.GetStringMap("server")
-	for k, vMap := range elementsMap {
-		log.Print("Key: ", k)
-		log.Println(" Value: ", vMap)
-	}
 
 	portHttp := elementsMap["http"].(map[string]interface{})["port"]
 	log.Printf("HTTP port from %s: %d", viper.ConfigFileUsed(), portHttp)
 
-	portHttps := elementsMap["https"].(map[string]interface{})["port"]
-	log.Printf("HTTPS port from %s: %d", viper.ConfigFileUsed(), portHttps)
+	originUrl := elementsMap["origin_url"]
+	if originUrl != nil {
 
-	//serverCmd.Flags().StringVar(&HttpPortNumber, HttpPortFlag, "8080", "HTTP port")
+	}
+	log.Println("Origin URL from config file %s", originUrl)
+
 	flags := rootCmd.Flags()
+
 	flags.String(HttpPortFlag, "8080", "HTTP port")
 	err := viper.BindPFlag(HttpPortFlag, flags.Lookup("http"))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	flags.String(OriginUrlFlag, "http://httpbin.org/", "Origin URL")
+	err = viper.BindPFlag(OriginUrlFlag, flags.Lookup("http"))
 	if err != nil {
 		log.Fatalln(err)
 	}

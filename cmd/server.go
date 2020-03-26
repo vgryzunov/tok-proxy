@@ -35,10 +35,13 @@ func Server(cmd *cobra.Command, agrs []string) {
 	log.Printf("Using HTTP Port: %s", port)
 
 	path := "/*catchall"
-	origin, parseErr := url.Parse("http://localhost:9091/")
+
+	originUrl := viper.GetString(OriginUrlFlag)
+	log.Printf("Origin URL: %s", originUrl)
+
+	origin, parseErr := url.Parse(originUrl)
 	if parseErr != nil {
 		log.Fatalln(parseErr)
-		return
 	}
 	log.Printf("Origin URL: %s", origin.String())
 

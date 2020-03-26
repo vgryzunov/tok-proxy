@@ -2,11 +2,5 @@
 server:
   http:
     port: 18000
-  https:
-    port: 18443
 
-  locations:
-    - uri: "/to-http/"
-      proxy-pass: "http://httpbin.org/"
-    - uri: "/to-https/"
-      proxy-pass: "https://httpbin.org/"
+  #: "http://localhost:9091/"
